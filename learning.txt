@@ -1,0 +1,10 @@
+1. working of MD5 
+2. implementation fo MD5
+3. step1 - padding bits
+4. step2 - padding length 
+5. step 3 - initialize MD Buffer
+6. step 4 - proces each block
+6. step 5 - continued.
+
+
+5f4dcc3b5aa765d61d8327deb882cf99
