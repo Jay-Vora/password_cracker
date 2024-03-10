@@ -6,11 +6,20 @@ def binaryRepresentation(inputMsg) :
     return binary_message
 
 
-def multipleOf512(lenMsg):
-    res = lenMsg % 512
+def multipleOf512(inputMsgBits):
+    res = len(inputMsgBits) % 512
     finalRes = 512 - res if res != 0 else 0
 
-    return finalRes
+    if finalRes < 64:
+        inputMsgFinal = inputMsgBits[:-64]
+
+    else:
+        finalRes = finalRes - 64
+        inputMsgFinal = inputMsgBits
+
+    return (finalRes, inputMsgFinal)
+
+
 
 def zeroesAddedInput(paddingInput, zeroesToBeAdded):
     
@@ -33,14 +42,8 @@ def addLengthBits(msgLen):
 
 def padding(inputBits, inputMsg) :
     addedOneBit = inputBits + '1'
-    zeroesToBeAdded = multipleOf512(len(addedOneBit))
-
-    if zeroesToBeAdded < 64:
-        paddedResult = addedOneBit[:-64]  # Remove last 64 bits
-    else:
-        paddedResult = addedOneBit
-
-    paddedResultFinal = zeroesAddedInput(paddedResult, zeroesToBeAdded)
+    zeroesToBeAdded, msgBits = multipleOf512(addedOneBit)
+    paddedResultFinal = zeroesAddedInput(msgBits, zeroesToBeAdded)
     lengthIn64Bits = addLengthBits(len(inputMsg))
     paddedResultFinal += lengthIn64Bits
 
@@ -48,9 +51,12 @@ def padding(inputBits, inputMsg) :
 
 
 
-inputmsg = "a"
+inputmsg = "ajgjfjgjhgkfdkgjfjghjdjgkhjdhgkdhgjskghsjgkjsbhgfjshgfjg"
 msgBits = binaryRepresentation(inputmsg)
-
+# print(binaryRepresentation(inputmsg))
+# x = inputmsg + '1'
+# y, z = multipleOf512(x)
+# print(y, z)
 
 print(padding(msgBits, inputmsg))
 print(len(padding(msgBits,inputmsg)))
