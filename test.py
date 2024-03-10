@@ -6,13 +6,13 @@ def binaryRepresentation(inputMsg) :
 
     return binary_message
 
-result = binaryRepresentation('abcd')
-print(result)
-print(len(result))
+# result = binaryRepresentation('abcd')
+# print(result)
+# print(len(result))
 
-paddingInput = result + '1'
-print(paddingInput)
-print(len(paddingInput))
+# paddingInput = result + '1'
+# print(paddingInput)
+# print(len(paddingInput))
 
 
 def addLengthBits(msgLen):
@@ -21,8 +21,8 @@ def addLengthBits(msgLen):
 
     return binary_length 
 
-print(addLengthBits(4))
-print(len(addLengthBits(4)))
+# print(addLengthBits(4))
+# print(len(addLengthBits(4)))
 
 
 def multipleOf512(lenMsg):
@@ -32,13 +32,6 @@ def multipleOf512(lenMsg):
     #if finalRes < 0:
         #finalRes = 0 - (finalRes)
     return finalRes
-
-# x = 121
-# y = multipleOf512(x)
-# print(y)
-
-
-#once i have the zeroes needed, i need to add that many zeroes to the input bits
 
 def zeroesAddedInput(paddingInput, zeroesToBeAdded):
     
@@ -51,13 +44,25 @@ def zeroesAddedInput(paddingInput, zeroesToBeAdded):
 
     return paddingInput
 
-paddingInput_final = zeroesAddedInput(paddingInput, multipleOf512(len(paddingInput) ))
-print(paddingInput_final)
-print(len(paddingInput_final))
+
+msg = 'abcdefghi'
+binarymsg = binaryRepresentation(msg)
+oneadded = binarymsg + '1'
+x = multipleOf512(len(oneadded))
+print(binarymsg, oneadded, x)
+y = zeroesAddedInput(oneadded, x)
+print(len(y))
+
+#once i have the zeroes needed, i need to add that many zeroes to the input bits
+
+
+# paddingInput_final = zeroesAddedInput(paddingInput, multipleOf512(len(paddingInput) ))
+# print(paddingInput_final)
+# print(len(paddingInput_final))
 
 def padding(lengthBits, paddingInput_final):
     paddingInput_final += lengthBits
 
     return paddingInput_final
 
-print(padding(addLengthBits(4), paddingInput_final))
+# print(padding(addLengthBits(4), paddingInput_final))
