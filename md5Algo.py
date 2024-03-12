@@ -104,7 +104,7 @@ D = 0x10325476
 # aBitLength = A.bit_length
 # print(aBitLength)
 
-#message schedul process
+#message schedul process breaks 512 bits block further down into 16 32 bits subblocks
 def mesageSchedule(inputBlock):
     blockSize = 512
     subBlockSize = 32
@@ -117,3 +117,8 @@ def mesageSchedule(inputBlock):
 # y =int(512 / 32)
 # print(y)
 print(mesageSchedule(y))
+
+
+# def compressionFunction(subblocks):
+#     for subblock in subblocks:
+#         #for each subblock apply 64 rounds of operations
