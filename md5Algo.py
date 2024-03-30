@@ -9,6 +9,13 @@ def binaryRepresentation(inputMsg) :
 
     return binary_message
 
+#converts hex into binary nums
+def hex_to_binary_32(hex_num):
+    # Convert hexadecimal to binary
+    binary = bin(int(hex_num, 16))[2:]
+    # Pad with leading zeros to make it 32 bits long
+    binary_padded = binary.zfill(32)
+    return binary_padded
 
 def multipleOf512(inputMsgBits):
     res = len(inputMsgBits) % 512
@@ -122,3 +129,47 @@ print(mesageSchedule(y))
 # def compressionFunction(subblocks):
 #     for subblock in subblocks:
 #         #for each subblock apply 64 rounds of operations
+
+
+def firstRoundFunction(valueB, valueC, valueD):
+    #code here
+
+    firstResult = valueB & valueC
+    secondResult = (( ~valueB) & valueD)
+    finalResult = firstResult | secondResult
+    finalResult = hex(finalResult)
+    final = hex_to_binary_32(finalResult)
+
+    return final
+
+print(firstRoundFunction(B,C,D))    
+
+def secondRoundFuction(valueB, valueC, valueD):
+    #code here
+    firstResult = valueB & valueC
+    secondResult = (valueC & (~valueD))
+    finalResult = firstResult | secondResult
+    finalResult = hex(finalResult)
+    final = hex_to_binary_32(finalResult)
+
+    return final
+
+
+def thirdRoundFunction(valueB, valueC, valueD):
+    #code here
+    firstResult = valueB ^ valueC
+    finalResult = firstResult ^ valueD
+    finalResult = hex(finalResult)
+    final = hex_to_binary_32(finalResult)
+
+    return final
+
+def fourthRoundFunction(valueB, valueC, valueD):
+    #code here
+    firstResult = (valueB | (~ valueD))
+    finalResult = valueC ^ firstResult
+    finalResult = hex(finalResult)
+    final = hex_to_binary_32(finalResult)
+
+    return final
+
