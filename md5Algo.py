@@ -24,6 +24,14 @@ K = [
     0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
     0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391
 ]
+
+# Define the s[i] values for left rotation
+s = [7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+    5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,
+    4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,
+    6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21 ]
+
+
 # Initialize the four buffers A, B, C, D with their respective initial values
 A = 0x67452301 
 B = 0xefcdab89 
@@ -39,7 +47,7 @@ def binaryRepresentation(inputMsg) :
 #converts hex into binary nums
 def hex_to_binary_32(hex_num):
     # Convert hexadecimal to binary
-    binary = bin(int(hex_num, 16))[2:]
+    binary = format(int(hex_num, 16), '0b')
     # Pad with leading zeros to make it 32 bits long
     binary_padded = binary.zfill(32)
     return binary_padded
@@ -86,12 +94,6 @@ def padding(inputBits, inputMsg) :
 
     return paddedResultFinal
 
-
-
-inputmsg = "nghgwegfwjgngsghdvsbvdghdhfghdhvjdjhvbnhfdbhdbndhjvbbdfhchdsbvhdhcvbsvbvghsgvshvhdbvbdnhvbndbvb"
-msgBits = binaryRepresentation(inputmsg)
-
-
 #now the task is to divide the msg into equal blocks of 512 bits
 def split_into_blocks(paddedMessage):
     blockSize = 512
@@ -118,7 +120,7 @@ def messageSchedule(inputBlock):
     for i in range(limit):
         subblocks.append(inputBlock[i * subBlockSize : (i + 1) * subBlockSize])
     
-    return subblocks 
+    return subblocks
 
 
 
@@ -126,6 +128,12 @@ def compressionFunction(blocks, A, B, C, D):
     # Define the four auxiliary functions for the rounds
     def firstRoundFunction(valueB, valueC, valueD):
         # Implement first round function
+        if isinstance(valueB, str):
+            valueB = int(valueB, 16)
+        if isinstance(valueC, str):
+            valueC = int(valueC, 16)
+        if isinstance(valueD, str):
+            valueD = int(valueD, 16)
         firstResult = valueB & valueC
         secondResult = (( ~valueB) & valueD)
         finalResult = firstResult | secondResult
@@ -136,6 +144,12 @@ def compressionFunction(blocks, A, B, C, D):
 
     def secondRoundFunction(valueB, valueC, valueD):
         # Implement second round function
+        if isinstance(valueB, str):
+            valueB = int(valueB, 16)
+        if isinstance(valueC, str):
+            valueC = int(valueC, 16)
+        if isinstance(valueD, str):
+            valueD = int(valueD, 16)
         firstResult = valueB & valueC
         secondResult = (valueC & (~valueD))
         finalResult = firstResult | secondResult
@@ -146,6 +160,12 @@ def compressionFunction(blocks, A, B, C, D):
 
     def thirdRoundFunction(valueB, valueC, valueD):
         # Implement third round function
+        if isinstance(valueB, str):
+            valueB = int(valueB, 16)
+        if isinstance(valueC, str):
+            valueC = int(valueC, 16)
+        if isinstance(valueD, str):
+            valueD = int(valueD, 16)
         firstResult = valueB ^ valueC
         finalResult = firstResult ^ valueD
         finalResult = hex(finalResult)
@@ -154,12 +174,22 @@ def compressionFunction(blocks, A, B, C, D):
         return final
     def fourthRoundFunction(valueB, valueC, valueD):
         # Implement fourth round function
+        if isinstance(valueB, str):
+            valueB = int(valueB, 16)
+        if isinstance(valueC, str):
+            valueC = int(valueC, 16)
+        if isinstance(valueD, str):
+            valueD = int(valueD, 16)
         firstResult = (valueB | (~ valueD))
         finalResult = valueC ^ firstResult
         finalResult = hex(finalResult)
         final = hex_to_binary_32(finalResult)
 
         return final
+    
+    def leftrotate(x, c):
+        return ((x << c) | (x >> (32 - c))) & 0xFFFFFFFF
+
 
     # Loop through each block
     for block in blocks:
@@ -196,7 +226,9 @@ def compressionFunction(blocks, A, B, C, D):
             # Update DD
             DD = CC
             CC = BB
-            BB = BB + leftrotate((AA + F + K[i] + subblocks[g]), s[i])
+            s_index = i % len(s)
+            BB = BB + leftrotate((AA + int(F) + K[i] + int(subblocks[g])), s[s_index]) & 0xFFFFFFFF
+
             AA = temp
 
         # Update the values of A, B, C, and D with the results of this block
@@ -204,7 +236,41 @@ def compressionFunction(blocks, A, B, C, D):
         B = B + BB
         C = C + CC
         D = D + DD
+        # A = int(A)
+        # B = int(B)
+        # C = int(C)
+        # D = int(D)
+
+        # A = hex(A)
+        # B = hex(B)
+        # C = hex(C)
+        # D = hex(D)
+        # A = hex(A)[2:].zfill(8)
+        # B = hex(B)[2:].zfill(8)
+        # C = hex(C)[2:].zfill(8)
+        # D = hex(D)[2:].zfill(8)
+
 
     # Return the hash value
     return A, B, C, D
 
+inputmsg = "password"
+msgBits = binaryRepresentation(inputmsg)
+padded_msg = padding(msgBits, inputmsg)
+blocks = split_into_blocks(padded_msg)
+hash_result = compressionFunction(blocks, A, B, C, D)
+
+print(hash_result)
+
+#convert the decimal values back to hexadecimals
+A = hex(A)[2:].zfill(8)
+B = hex(B)[2:].zfill(8)
+C = hex(C)[2:].zfill(8)
+D = hex(D)[2:].zfill(8)
+
+print(A,B,C,D)
+
+
+#concatenate the resuly altogether to get the final hash value of the string
+final_hash = A + B + C + D
+print(final_hash)
