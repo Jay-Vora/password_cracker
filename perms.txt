@@ -1,0 +1,12 @@
+define character_set
+define max_password_length
+define target_hash
+
+generate all permutations of character_set up to max_password_length
+for each candidate_password in permutations:
+    candidate_hash = calculate_md5_hash(candidate_password)
+    if candidate_hash == target_hash:
+        print("Cracked password:", candidate_password)
+        break
+else:
+    print("Password not found within the given length limit")
