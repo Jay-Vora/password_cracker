@@ -10,3 +10,15 @@ for each candidate_password in permutations:
         break
 else:
     print("Password not found within the given length limit")
+
+below are the algos supported
+hashlib.md5([data, ]*, usedforsecurity=True)
+hashlib.sha1([data, ]*, usedforsecurity=True)
+hashlib.sha224([data, ]*, usedforsecurity=True)
+hashlib.sha256([data, ]*, usedforsecurity=True)
+hashlib.sha384([data, ]*, usedforsecurity=True)
+hashlib.sha512([data, ]*, usedforsecurity=True)¶
+hashlib.sha3_224([data, ]*, usedforsecurity=True)
+hashlib.sha3_256([data, ]*, usedforsecurity=True)
+hashlib.sha3_384([data, ]*, usedforsecurity=True)
+hashlib.sha3_512([data, ]*, usedforsecurity=True)
