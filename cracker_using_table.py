@@ -2,6 +2,8 @@
 from itertools import product
 import hashlib 
 import csv
+import os
+import base64
 
 
 #CONSTANTS
@@ -17,6 +19,16 @@ CHAR_SET = SMALL + CAPS + DIGITS + SPECIAL_CHARS
 # DEFINE THE MAX LENGTH OF THE PASSWORD
 MAX_LEN = 2
 
+# ADDED THE SALTING LAYER FOR MORE SECURE SYSTEM
+def salting(password):
+
+    salt = os.urandom(16)
+    salted_encoding = base64.b64encode(salt)
+    salted_decoding = salted_encoding.decode('utf-8')
+    password += salted_decoding
+    
+    return password
+
 #all possible permutations
 def perms_and_hashes(hash_function):
     #store all the possible perms in a dict 
@@ -28,14 +40,14 @@ def perms_and_hashes(hash_function):
         for perm in perm_iter:
 
             password = ''.join(perm)
+            pass_salting = salting(password)
             wrd_hash = hash_function()
-            wrd_hash.update(password.encode('iso-8859-1'))
+            wrd_hash.update(pass_salting.encode('iso-8859-1'))
             wrd_hash_hex = wrd_hash.hexdigest()
-            perms_dict[password] = wrd_hash_hex
+            perms_dict[wrd_hash_hex] = (password, pass_salting)
     
     return perms_dict
 
-#determining which algorithm is being used
 # Using a dictionary instead of a switch function to get rid of if-elif statements
 
 hash_dict = {
@@ -57,11 +69,11 @@ def save_to_csv(rainbow_table, output_csv):
 
     if rainbow_table != None:
         with open(output_csv, 'w', newline='') as csvfile:
-            fieldnames = ['Input', 'Hash']
+            fieldnames = ['Hash', 'Input']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for key, value in rainbow_table.items():
-                writer.writerow({'Input':key, 'Hash':value})
+                writer.writerow({'Hash':key, 'Input':value})
 
     else:
         output_csv = None
@@ -71,18 +83,26 @@ def save_to_csv(rainbow_table, output_csv):
 #read the csv file containing the rainbow table
 def read_csv(file_path):
 
-    if file_path != None:
+    try:
         with open(file_path, "r") as file:
             reader = csv.reader(file)
+            next(reader) # skip the header file
             my_dict = {}
-
             for row in reader:
-                my_dict[row[0]] = row[1]
-        file.close()
-    else:
-        my_dict = None
-
-    return my_dict
+                if len(row) == 2:  # Check if the row contains exactly two values
+                    hash_value = row[0]
+                    tuple_str = row[1]
+                    try:
+                        original_password, salted_password = eval(tuple_str)  # Convert the tuple string to a tuple
+                        my_dict[hash_value] = (original_password, salted_password)
+                    except Exception as e:
+                        print(f"Error parsing tuple in row: {row}: {e}")
+                else:
+                    print(f"Ignoring row: {row}: Invalid structure (expected 2 values)")
+        return my_dict
+    except Exception as e:
+        print(f"Error reading CSV file: {e}")
+        return None
 
 #target_hash = 'df7f95cac5274f809efc754d9b748637'
 
@@ -90,8 +110,8 @@ def search(target_hash, rainbow_table):
 
     if rainbow_table != None and target_hash != None:
         for key, value in rainbow_table.items():
-            if target_hash == value:
-                print(f"the pwd has been cracked! and password is {key}!!\n")
+            if target_hash == key:
+                print(f"the pwd has been cracked! and password is {value[0]}\n")
                 break
         else:
             print("password was not found for this hash!\n")
@@ -100,6 +120,7 @@ def search(target_hash, rainbow_table):
     return 0
 
 def main():
+    #print(salting())
     while True:
         hash_algo = input('''Please input the hash name or associated number that you would like to use for cracking:
                         1) md5
