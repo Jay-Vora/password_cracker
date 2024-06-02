@@ -120,7 +120,7 @@ def search(target_hash, rainbow_table):
     return 0
 
 def main():
-    #print(salting())
+    
     while True:
         hash_algo = input('''Please input the hash name or associated number that you would like to use for cracking:
                         1) md5
