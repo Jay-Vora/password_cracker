@@ -4,9 +4,9 @@ import hashlib
 import csv
 import os
 import base64
+from argon2 import PasswordHasher
+import argon2
 
-
-#CONSTANTS
 #CONSTANTS OR ALLOWED CHARS
 SMALL = 'abcdefghijklmnopqrstuvwxyz'
 CAPS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -20,6 +20,14 @@ CHAR_SET = SMALL + CAPS + DIGITS + SPECIAL_CHARS
 MAX_LEN = 2
 
 # ADDED THE SALTING LAYER FOR MORE SECURE SYSTEM
+# def salting(password):
+
+#     salt = os.urandom(16)
+#     salted_encoding = base64.b64encode(salt)
+#     salted_decoding = salted_encoding.decode('utf-8')
+#     #password += salted_decoding
+    
+#     return salted_decoding
 def salting(password):
 
     salt = os.urandom(16)
@@ -29,7 +37,7 @@ def salting(password):
     
     return password
 
-#all possible permutations
+#all possible permutations and their hashes with standardized algorithms
 def perms_and_hashes(hash_function):
     #store all the possible perms in a dict 
     perms_dict = {}
@@ -48,6 +56,44 @@ def perms_and_hashes(hash_function):
     
     return perms_dict
 
+#get the parameters and their values for KDF and store them into a dictionary
+def parameters_for_kdf(options):
+    options = [option.strip() for option in options]
+
+    parameter_values = {}
+    for option in options:
+        if option in ["time_cost", "memory_cost", "parallelism", "hash_len", "salt_len"]:
+            value = input(f"Enter the value for {option}: ")
+            parameter_values[option] = value
+
+    argon2_hasher = argon2.PasswordHasher(
+    time_cost=int(parameter_values.get("time_cost", 3)),
+    memory_cost=int(parameter_values.get("memory_cost", 65536)),
+    parallelism=int(parameter_values.get("parallelism", 4)),
+    hash_len=int(parameter_values.get("hash_len", 32)),
+    salt_len=int(parameter_values.get("salt_len", 16))
+    )
+    return parameter_values, argon2_hasher
+
+
+#function for KDF
+def generate_password_hashes_with_kdf(kdf_instance):
+
+
+    perms_dict = {}
+
+    for i in range(1, MAX_LEN+1):
+        perm_iter = product(CHAR_SET, repeat=i)
+
+        for perm in perm_iter:
+
+            password = ''.join(perm)
+            pass_salting = salting(password)
+            derived_key = kdf_instance.hash(password.encode(), salt=pass_salting.encode())
+            perms_dict[derived_key] = (password, pass_salting)
+
+    return perms_dict
+
 # Using a dictionary instead of a switch function to get rid of if-elif statements
 
 hash_dict = {
@@ -62,7 +108,9 @@ hash_dict = {
     'sha384': hashlib.sha384,
     '5': hashlib.sha384,
     'sha512': hashlib.sha512,
-    '6': hashlib.sha512
+    '6': hashlib.sha512,
+    'kdf': PasswordHasher,
+    '7': PasswordHasher
 }       
 
 def save_to_csv(rainbow_table, output_csv):
@@ -128,18 +176,28 @@ def main():
                         3) sha224
                         4) sha256
                         5) sha384
-                        6) sha512\n''').lower()
+                        6) sha512
+                        7) kdf \n''').lower()
         
         hash_function = hash_dict.get(hash_algo)
 
         if hash_function is None:
             print("Invalid algorithm. Please choose a valid one.")
         else:
-            rainbow_dict = perms_and_hashes(hash_function)
-            save_to_csv(rainbow_dict, 'output.csv')
-            target_hash = input("Please input a hash you want to look up in our rainbow table\n")
-            my_dictionary = read_csv('output.csv')
-            search(target_hash, my_dictionary)
+            if hash_algo == 'kdf' or hash_algo == '7':
+                ask_for_params = input('''Please input the parameters initials you'd like to use for your KDF and separated by commas:
+                                    1) time_cost
+                                    2) memory_cost
+                                    3) parallelism
+                                    4) hash_len
+                                    5) salt_len \n''').lower().split(',')
+                perms_hashes_kdf()
+            else:
+                rainbow_dict = perms_and_hashes(hash_function)
+                save_to_csv(rainbow_dict, 'output.csv')
+                target_hash = input("Please input a hash you want to look up in our rainbow table\n")
+                my_dictionary = read_csv('output.csv')
+                search(target_hash, my_dictionary)
 
         continue_choice = input("Do you want to continue? Type 'exit' to quit or press Enter to continue: ").strip().lower()
         if continue_choice == 'exit':
